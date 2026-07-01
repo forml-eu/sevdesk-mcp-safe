@@ -343,17 +343,23 @@ const server = new McpServer({
   version: "2.0.0",
 });
 
-// SAFE FORK: skip registration of disabled tools. This wrapper is the only change
-// to the registration flow, so upstream edits to individual server.tool(...) calls
-// merge without conflicts. Casts to `any` because the SDK's tool() is heavily overloaded.
-const originalTool = (server.tool as any).bind(server);
-(server as any).tool = (name: string, ...rest: any[]) => {
-  if (DISABLED_TOOLS.has(name)) {
-    console.error(`[safe-mode] skipping disabled tool "${name}"`);
-    return undefined;
-  }
-  return originalTool(name, ...rest);
-};
+// SAFE FORK: skip registration of disabled tools. Guards both SDK registration
+// methods — server.tool (used today) and server.registerTool (the newer API that
+// could arrive via an upstream merge); both take the tool name as their first arg.
+// This is the only change to the registration flow, so upstream edits to the
+// individual registration calls merge without conflicts. Casts to `any` because
+// these SDK methods are heavily overloaded.
+for (const method of ["tool", "registerTool"] as const) {
+  const original = (server as any)[method]?.bind(server);
+  if (!original) continue;
+  (server as any)[method] = (name: string, ...rest: any[]) => {
+    if (DISABLED_TOOLS.has(name)) {
+      console.error(`[safe-mode] skipping disabled tool "${name}"`);
+      return undefined;
+    }
+    return original(name, ...rest);
+  };
+}
 
 // Helper for error handling
 function handleError(error: unknown, operation: string): { content: [{ type: "text"; text: string }]; isError: true } {
