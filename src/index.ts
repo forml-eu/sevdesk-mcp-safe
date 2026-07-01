@@ -335,12 +335,31 @@ import {
   formatCommunicationWayResult,
   formatCommunicationWayDeleteResult,
 } from "./tools/communication.js";
+import { DISABLED_TOOLS } from "./safe-mode.js";
 
 // Create MCP server instance
 const server = new McpServer({
   name: "sevdesk-mcp",
   version: "2.0.0",
 });
+
+// SAFE FORK: skip registration of disabled tools. Guards both SDK registration
+// methods — server.tool (used today) and server.registerTool (the newer API that
+// could arrive via an upstream merge); both take the tool name as their first arg.
+// This is the only change to the registration flow, so upstream edits to the
+// individual registration calls merge without conflicts. Casts to `any` because
+// these SDK methods are heavily overloaded.
+for (const method of ["tool", "registerTool"] as const) {
+  const original = (server as any)[method]?.bind(server);
+  if (!original) continue;
+  (server as any)[method] = (name: string, ...rest: any[]) => {
+    if (DISABLED_TOOLS.has(name)) {
+      console.error(`[safe-mode] skipping disabled tool "${name}"`);
+      return undefined;
+    }
+    return original(name, ...rest);
+  };
+}
 
 // Helper for error handling
 function handleError(error: unknown, operation: string): { content: [{ type: "text"; text: string }]; isError: true } {
@@ -1334,7 +1353,7 @@ async function main(): Promise<void> {
   const transport = new StdioServerTransport();
 
   console.error("Starting sevdesk-mcp server v2.0.0...");
-  console.error("Registered 77 tools across 10 resource categories");
+  console.error(`Safe mode active: ${DISABLED_TOOLS.size} unsafe tools disabled (deletes, payments & transactions).`);
 
   await server.connect(transport);
 
