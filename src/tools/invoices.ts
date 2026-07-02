@@ -142,6 +142,18 @@ export function formatInvoice(invoice: Invoice): string {
   if (invoice.header) {
     lines.push(`Header: ${invoice.header}`);
   }
+  if (invoice.headText) {
+    lines.push(`Head Text: ${invoice.headText}`);
+  }
+  if (invoice.footText) {
+    lines.push(`Foot Text: ${invoice.footText}`);
+  }
+  if (invoice.timeToPay !== null && invoice.timeToPay !== undefined) {
+    lines.push(`Time to Pay: ${invoice.timeToPay} days`);
+  }
+  if (invoice.deliveryDateUntil) {
+    lines.push(`Delivery Date Until: ${invoice.deliveryDateUntil}`);
+  }
   if (invoice.addressName) {
     lines.push(`Address: ${invoice.addressName}`);
     if (invoice.addressStreet) lines.push(`  Street: ${invoice.addressStreet}`);
@@ -198,6 +210,7 @@ const invoicePositionSchema = z.object({
  */
 export const createInvoiceSchema = {
   contactId: z.string().describe("Contact ID for the invoice recipient"),
+  invoiceNumber: z.string().optional().describe("Invoice number (e.g. RE-2026-50). Note: the factory endpoint does not auto-assign numbers to drafts — without this, the draft stays unnumbered"),
   invoiceDate: z.string().optional().describe("Invoice date (YYYY-MM-DD), defaults to today"),
   positions: z.array(invoicePositionSchema).describe("Invoice line items"),
   header: z.string().optional().describe("Invoice header/title"),
@@ -242,6 +255,11 @@ export const createRecurringInvoiceSchema = {
  */
 export const updateInvoiceSchema = {
   id: z.string().describe("The sevdesk invoice ID to update"),
+  invoiceNumber: z.string().optional().describe("Invoice number (e.g. RE-2026-50)"),
+  addressName: z.string().optional().describe("Recipient address: name line"),
+  addressStreet: z.string().optional().describe("Recipient address: street"),
+  addressZip: z.string().optional().describe("Recipient address: ZIP code"),
+  addressCity: z.string().optional().describe("Recipient address: city"),
   header: z.string().optional().describe("Invoice header/title"),
   headText: z.string().optional().describe("Text before positions"),
   footText: z.string().optional().describe("Text after positions"),
@@ -377,6 +395,7 @@ export const deleteInvoicePositionSchema = {
  */
 export async function createInvoice(params: {
   contactId: string;
+  invoiceNumber?: string;
   invoiceDate?: string;
   positions: Array<{
     quantity: number;
@@ -425,6 +444,7 @@ export async function createInvoice(params: {
     showNet: params.showNet !== false,
   };
 
+  if (params.invoiceNumber !== undefined) invoice.invoiceNumber = params.invoiceNumber;
   if (params.taxRule !== undefined) invoice.taxRule = { id: params.taxRule, objectName: "TaxRule" };
   if (params.header !== undefined) invoice.header = params.header;
   if (params.headText !== undefined) invoice.headText = params.headText;
@@ -560,6 +580,11 @@ export async function createRecurringInvoice(params: {
  */
 export async function updateInvoice(params: {
   id: string;
+  invoiceNumber?: string;
+  addressName?: string;
+  addressStreet?: string;
+  addressZip?: string;
+  addressCity?: string;
   header?: string;
   headText?: string;
   footText?: string;
@@ -570,6 +595,11 @@ export async function updateInvoice(params: {
 }): Promise<Invoice> {
   const body: Record<string, unknown> = {};
 
+  if (params.invoiceNumber !== undefined) body.invoiceNumber = params.invoiceNumber;
+  if (params.addressName !== undefined) body.addressName = params.addressName;
+  if (params.addressStreet !== undefined) body.addressStreet = params.addressStreet;
+  if (params.addressZip !== undefined) body.addressZip = params.addressZip;
+  if (params.addressCity !== undefined) body.addressCity = params.addressCity;
   if (params.header !== undefined) body.header = params.header;
   if (params.headText !== undefined) body.headText = params.headText;
   if (params.footText !== undefined) body.footText = params.footText;
