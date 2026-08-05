@@ -2,6 +2,8 @@
 
 A comprehensive Model Context Protocol (MCP) server for integrating with the [sevdesk](https://sevdesk.de) German accounting and bookkeeping API. Features **76 tools** for full CRUD operations across all major sevdesk resources.
 
+> This fork runs in safe mode. It does not expose delete operations, payment booking, or bank-transaction creation and updates. See [`src/safe-mode.ts`](src/safe-mode.ts) for the authoritative denylist.
+
 ## Features
 
 - **Contact Management** - Full CRUD for customers, suppliers, and partners
@@ -64,9 +66,44 @@ Add to your `claude_desktop_config.json`:
 }
 ```
 
-### Claude Code
+### Claude Code on the web
 
-Add to `.mcp.json` in your project directory (project-specific) or `~/.claude/.mcp.json` (global):
+This repository is also a Claude Code plugin marketplace. In the repository where you want to use sevdesk, add the following to `.claude/settings.json` and commit it:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "forml-tools": {
+      "source": {
+        "source": "github",
+        "repo": "forml-eu/sevdesk-mcp-safe"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "sevdesk-mcp-safe@forml-tools": true
+  }
+}
+```
+
+Then configure the cloud environment used by Claude Code:
+
+1. Add `SEVDESK_API_TOKEN=your-api-token-here` to **Environment variables**. Do not commit the token.
+2. Change **Network access** to **Custom**, allow `my.sevdesk.de`, and keep the default trusted domains enabled.
+3. Start a new web session so Claude Code installs and enables the plugin.
+
+The plugin contains a standalone server bundle, so no setup script or `npm install` is required in the cloud VM.
+
+### Claude Code locally
+
+You can install the same plugin through the marketplace:
+
+```text
+/plugin marketplace add forml-eu/sevdesk-mcp-safe
+/plugin install sevdesk-mcp-safe@forml-tools
+```
+
+Set `SEVDESK_API_TOKEN` in the environment before starting Claude Code. Alternatively, add the server directly to `.mcp.json` in your project directory:
 
 ```json
 {

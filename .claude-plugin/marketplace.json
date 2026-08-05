@@ -1,0 +1,17 @@
+{
+  "name": "forml-tools",
+  "owner": {
+    "name": "forml",
+    "url": "https://github.com/forml-eu"
+  },
+  "description": "Claude Code integrations maintained by forml",
+  "plugins": [
+    {
+      "name": "sevdesk-mcp-safe",
+      "source": "./",
+      "description": "A safety-restricted sevdesk MCP server for Claude Code",
+      "category": "productivity",
+      "tags": ["sevdesk", "accounting", "mcp"]
+    }
+  ]
+}

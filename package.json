@@ -11,7 +11,7 @@
     "build"
   ],
   "scripts": {
-    "build": "tsc && chmod 755 build/index.js",
+    "build": "tsc && esbuild src/index.ts --bundle --platform=node --format=esm --target=node18 --outfile=build/sevdesk-mcp.js && chmod 755 build/index.js build/sevdesk-mcp.js",
     "start": "node build/index.js",
     "dev": "tsc --watch",
     "test": "vitest run",
@@ -34,6 +34,7 @@
   "devDependencies": {
     "@types/node": "^25.0.10",
     "@vitest/coverage-v8": "^4.0.18",
+    "esbuild": "0.27.3",
     "msw": "^2.12.10",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "sevdesk-mcp-safe",
+  "displayName": "sevdesk MCP (Safe)",
+  "version": "1.0.0",
+  "description": "Connect Claude Code to sevdesk while excluding destructive and money-moving MCP tools",
+  "author": {
+    "name": "forml",
+    "url": "https://github.com/forml-eu"
+  },
+  "homepage": "https://github.com/forml-eu/sevdesk-mcp-safe#readme",
+  "repository": "https://github.com/forml-eu/sevdesk-mcp-safe",
+  "license": "ISC",
+  "keywords": ["sevdesk", "accounting", "mcp"],
+  "mcpServers": {
+    "sevdesk": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/build/sevdesk-mcp.js"]
+    }
+  }
+}

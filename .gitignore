@@ -1,8 +1,9 @@
 # Dependencies
 node_modules/
 
-# Build output
-build/
+# Build output (the standalone Claude Code plugin bundle is committed)
+build/*
+!build/sevdesk-mcp.js
 dist/
 
 # Environment files
